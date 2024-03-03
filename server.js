@@ -3,6 +3,7 @@ const logger = require("morgan");
 const cors = require("cors");
 require("dotenv").config();
 const error = require("./src/helpers/error.js");
+const wrapper = require("./src/helpers/wrapper.js");
 
 const app = express();
 const formatLoger = app.get("env") === "dev" ? "dev" : "short";
@@ -11,19 +12,19 @@ app.use(logger(formatLoger));
 app.use(cors());
 app.use(express.json());
 
-app.get("/", (req, res, next) => {
-  const myError = error(401, "My error 1");
-  next(myError);
-  return;
-  res.json("Hello world");
-});
+app.get(
+  "/",
+  wrapper((req, res) => {
+    throw error(401, "My error 1");
+  })
+);
 
-app.get("/flower", (req, res, next) => {
-  const myError = error(402, "My error 2");
-  next(myError);
-  return;
-  res.json("Love flowers");
-});
+app.get(
+  "/flower",
+  wrapper((req, res) => {
+    throw error(402, "My error 2");
+  })
+);
 
 app.use((_, res) => {
   res.status(404).json({ message: "Not found" });
